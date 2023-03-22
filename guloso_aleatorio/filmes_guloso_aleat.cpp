@@ -1,6 +1,9 @@
 #include<iostream>
+#include <chrono>
 #include<vector>
 #include<algorithm>
+#include <random>
+#include <map>
 
 #define RESET   "\033[0m"
 #define BLACK   "\033[30m"      /* Black */
@@ -42,11 +45,6 @@ bool heuristica_por_duracao(filme a, filme b){
 // Testar com geração de input (ter certeza que o máximo de categorias está funcionando)
 
 void output_visual(vector<filme> mochila){
-    // vector<char> agenda(24);
-
-    // for(auto& el: mochila){
-    //     cout << el.h_inicio << " " << el.h_fim << " " << el.categoria << '\n';
-    // }
     cout<<"\n\n\n";
     
     cout << "|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|" << endl;
@@ -99,7 +97,40 @@ void output_visual(vector<filme> mochila){
     }
 }
 
+bool verify_agenda(map<int, bool> agenda, filme this_filme){
+    if (this_filme.h_inicio == this_filme.h_fim)
+        return !agenda[this_filme.h_inicio];
+
+    for (int i=this_filme.h_inicio; i<this_filme.h_fim; i++){
+        if (agenda[i]==true){
+            return false;
+        }
+    }
+    return true;
+}
+
+map<int, bool> fill_agenda(map<int, bool> agenda, filme this_filme){
+    if (this_filme.h_inicio == this_filme.h_fim)
+        agenda[this_filme.h_inicio] = true;
+    else{
+        for (int i=this_filme.h_inicio; i<this_filme.h_fim; i++){
+            agenda[i] = true;
+        }  
+    }
+   
+    return agenda;
+}
+
+
+// Fill agenda não está funcionando, testar as duas funções criadas!!
+
 int main() {
+
+    map<int, bool> agenda;
+    for (int h=0; h<24; h++){
+        agenda[h]=false;
+    }
+
     int n_filme = 0;
     int n_cat = 0;
     vector<filme> mochila;
@@ -130,11 +161,22 @@ int main() {
     sort(todos_filmes.begin(), todos_filmes.end(), heuristica_por_duracao);
 
     //for(int i = 0; i < n_filme; i++){
-    //    cout << todos_filmes[i].h_inic7io << " " << todos_filmes[i].h_fim << " " << todos_filmes[i].categoria << '\n';
+    //    cout << todos_filmes[i].h_inicio << " " << todos_filmes[i].h_fim << " " << todos_filmes[i].categoria << '\n';
     //}
-    int horario = 0;
+    unsigned seed = chrono::system_clock::now().time_since_epoch().count();
+    default_random_engine generator(seed);
+    uniform_int_distribution<int> distribution(1,4);
+
     bool adicionou_madrugada = false;
+
+    int i = 1;
+
     for(auto& this_filme : todos_filmes){
+        if (this_filme.h_fim==0){
+            this_filme.h_fim = 24;
+        }
+        int prob = distribution(generator); // gera número
+
         //Duas verificações: se o horario é menor que o horario inicial 
         //                   se a categoria não estoura o máximo daquela categoria
         this_id = this_filme.id;
@@ -142,28 +184,54 @@ int main() {
         this_h_fim=this_filme.h_fim;
         this_categoria=this_filme.categoria;
 
-        if (horario <= this_h_inicio && max_categorias[this_categoria-1] - 1 >= 0){
-            if (this_h_fim < this_h_inicio){
-                if (adicionou_madrugada==false){
-                    horario = this_h_fim;
-                    max_categorias[this_categoria-1] -= 1;
-                    mochila.push_back({this_id, this_h_inicio, this_h_fim, this_categoria});
-                    adicionou_madrugada=true;
+        if (verify_agenda(agenda, this_filme) && max_categorias[this_categoria-1] - 1 >= 0){
+            // if (this_h_fim < this_h_inicio){
+            //     if (adicionou_madrugada==false){
+            //         max_categorias[this_categoria-1] -= 1;
+            //         mochila.push_back({this_id, this_h_inicio, this_h_fim, this_categoria});
+            //         adicionou_madrugada=true;
 
-                }
-            }
-            else{
-                horario = this_h_fim;
-                max_categorias[this_categoria-1] -= 1;
-                mochila.push_back({this_id, this_h_inicio, this_h_fim, this_categoria});
+            //     }
+            // }
+            // else{
+            max_categorias[this_categoria-1] -= 1;
+            agenda = fill_agenda(agenda, this_filme);
+            mochila.push_back({this_id, this_h_inicio, this_h_fim, this_categoria});
+            //}
+
+        }
+        if (prob==4 && i<n_filme){
+            uniform_int_distribution<int> distribution_id(i, n_filme-1);
+            int id_aleat = distribution_id(generator);
+            filme filme_aleat = todos_filmes[id_aleat];
+
+            if (verify_agenda(agenda, filme_aleat) && max_categorias[filme_aleat.categoria-1] - 1 >= 0){
+                // if (filme_aleat.h_fim < filme_aleat.h_inicio){
+                //     if (adicionou_madrugada==false){
+                //         max_categorias[filme_aleat.categoria-1] -= 1;
+                //         mochila.push_back(filme_aleat);
+                //         adicionou_madrugada=true;
+                //         todos_filmes.erase(todos_filmes.begin()+id_aleat-1);
+                //         n_filme = n_filme - 1;
+
+                //     }
+                // }
+                //else{
+                max_categorias[filme_aleat.categoria-1] -= 1;
+                agenda = fill_agenda(agenda, filme_aleat);
+                mochila.push_back(filme_aleat);
+                todos_filmes.erase(todos_filmes.begin()+id_aleat-1);
+                n_filme = n_filme - 1;
+                //}
+                
             }
 
         }
+        i++;
         
     }
     //ordenando para imprimir
     //sort(mochila.begin(), mochila.end(), [](auto& i, auto&j){return i.id < j.id;});
-    cout << "Horário final: " << horario << '\n';
     output_visual(mochila);
     cout << '\n';
     return 0;

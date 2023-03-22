@@ -1,23 +1,21 @@
 #include <chrono>
 #include <random>
 #include <fstream>
+#include <string>
 #include <boost/random.hpp>
 
 using namespace std;
 
-int main(int argc, char *argv[]) {
-    int n = atoi(argv[1]);
-    int m = atoi(argv[2]);
-
+void inputGenerator(int n, int m) {
     ofstream inputFile;
-    inputFile.open("input.txt");
+    inputFile.open("input_"+to_string(n)+"_"+to_string(m));
     inputFile << n << " " << m << endl;
 
     unsigned seed = chrono::system_clock::now().time_since_epoch().count();
     default_random_engine generator (seed);
 
-    // Definindo distribuição normal com média de 3 e desvio padrão de 1
-    normal_distribution<double> distribution_dif(3, 1.0);
+    // Definindo distribuição normal com média de 4 e desvio padrão de 1
+    normal_distribution<double> distribution_dif(4, 1.0);
 
     uniform_int_distribution<int> distribution_hr(0, 23);
     uniform_int_distribution<int> distribution_cat(1, m);
@@ -40,5 +38,20 @@ int main(int argc, char *argv[]) {
 
 
     inputFile.close();
+}
+
+
+int main(int argc, char *argv[]){
+    int n_filmes_inicial = 1;
+    int n_filmes_final = 10000;
+
+    int n_cat_inicial = 1;
+    int n_cat_final = 5;
+
+    for (int n_filme=n_filmes_inicial; n_filme<=n_filmes_final; n_filme++){
+        for (int n_cat=n_cat_inicial; n_cat<=n_cat_final; n_cat++){
+            inputGenerator(n_filme, n_cat);
+        }
+    }
     return 0;
 }
