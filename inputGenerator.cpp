@@ -42,13 +42,13 @@ void inputGenerator(int n, int m) {
 
 
 int main(int argc, char *argv[]){
-    int n_filmes_inicial = 1;
+    int n_filmes_inicial = 5;
     int n_filmes_final = 10000;
 
     int n_cat_inicial = 1;
-    int n_cat_final = 5;
+    int n_cat_final = 20;
 
-    for (int n_filme=n_filmes_inicial; n_filme<=n_filmes_final; n_filme++){
+    for (int n_filme=n_filmes_inicial; n_filme<=n_filmes_final; n_filme+=5){
         for (int n_cat=n_cat_inicial; n_cat<=n_cat_final; n_cat++){
             inputGenerator(n_filme, n_cat);
         }

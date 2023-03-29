@@ -4,6 +4,7 @@
 #include<algorithm>
 #include <random>
 #include <map>
+#include <fstream>
 
 #define RESET   "\033[0m"
 #define BLACK   "\033[30m"      /* Black */
@@ -41,8 +42,23 @@ bool heuristica_por_duracao(filme a, filme b){
     return a.duracao < b.duracao; // ordenando pela duração do filme
 }
 
-// Falta verificação de dia
-// Testar com geração de input (ter certeza que o máximo de categorias está funcionando)
+void generateOuput(vector<filme> mochila, int n_filme, int n_cat){
+    ofstream outputFile;
+    outputFile.open("../outputs/output_aleat_"+to_string(n_filme)+"_"+to_string(n_cat));
+    outputFile << n_filme << " " << n_cat << endl;
+
+    double tempo_tela=0;
+
+    int n_mochila = 0;
+    for(auto& this_film : mochila){
+        tempo_tela +=this_film.duracao;
+        n_mochila += 1;
+    }
+    double media = tempo_tela/(double)n_mochila;
+    outputFile << n_mochila << " " << tempo_tela << " " << media << endl;
+    outputFile.close();
+
+}
 
 void output_visual(vector<filme> mochila){
     cout<<"\n\n\n";
@@ -117,19 +133,18 @@ map<int, bool> fill_agenda(map<int, bool> agenda, filme this_filme){
             agenda[i] = true;
         }  
     }
-   
+    map<int, bool>::iterator it;
+
+    for(it=agenda.begin(); it!=agenda.end(); ++it){
+    cout << it->first << " => " << it->second << '\n';
+    }
+    cout << "-----------------" << '\n';
     return agenda;
 }
-
-
-// Fill agenda não está funcionando, testar as duas funções criadas!!
 
 int main() {
 
     map<int, bool> agenda;
-    for (int h=0; h<24; h++){
-        agenda[h]=false;
-    }
 
     int n_filme = 0;
     int n_cat = 0;
@@ -153,12 +168,15 @@ int main() {
 
     for(int i = 0; i < n_filme; i++){
         cin >> this_h_inicio >> this_h_fim >> this_categoria;
+        if (this_h_fim<this_h_inicio){
+            this_h_fim += 24;
+        }
         todos_filmes.push_back({i, this_h_inicio, this_h_fim, this_categoria, this_h_fim - this_h_inicio});
     }
 
     //ordenar
-    //sort(todos_filmes.begin(), todos_filmes.end(), heuristica_por_final);
-    sort(todos_filmes.begin(), todos_filmes.end(), heuristica_por_duracao);
+    sort(todos_filmes.begin(), todos_filmes.end(), heuristica_por_final);
+    //sort(todos_filmes.begin(), todos_filmes.end(), heuristica_por_duracao);
 
     //for(int i = 0; i < n_filme; i++){
     //    cout << todos_filmes[i].h_inicio << " " << todos_filmes[i].h_fim << " " << todos_filmes[i].categoria << '\n';
@@ -167,63 +185,30 @@ int main() {
     default_random_engine generator(seed);
     uniform_int_distribution<int> distribution(1,4);
 
-    bool adicionou_madrugada = false;
-
     int i = 1;
+    int n_filme_copy = n_filme;
 
     for(auto& this_filme : todos_filmes){
-        if (this_filme.h_fim==0){
-            this_filme.h_fim = 24;
-        }
         int prob = distribution(generator); // gera número
 
-        //Duas verificações: se o horario é menor que o horario inicial 
-        //                   se a categoria não estoura o máximo daquela categoria
-        this_id = this_filme.id;
-        this_h_inicio=this_filme.h_inicio;
-        this_h_fim=this_filme.h_fim;
-        this_categoria=this_filme.categoria;
-
-        if (verify_agenda(agenda, this_filme) && max_categorias[this_categoria-1] - 1 >= 0){
-            // if (this_h_fim < this_h_inicio){
-            //     if (adicionou_madrugada==false){
-            //         max_categorias[this_categoria-1] -= 1;
-            //         mochila.push_back({this_id, this_h_inicio, this_h_fim, this_categoria});
-            //         adicionou_madrugada=true;
-
-            //     }
-            // }
-            // else{
-            max_categorias[this_categoria-1] -= 1;
+        if (verify_agenda(agenda, this_filme) && max_categorias[this_filme.categoria-1] - 1 >= 0){
+            max_categorias[this_filme.categoria-1] -= 1;
             agenda = fill_agenda(agenda, this_filme);
-            mochila.push_back({this_id, this_h_inicio, this_h_fim, this_categoria});
-            //}
+            mochila.push_back(this_filme);
 
         }
-        if (prob==4 && i<n_filme){
-            uniform_int_distribution<int> distribution_id(i, n_filme-1);
+        if (prob==4 && i<n_filme_copy){
+            uniform_int_distribution<int> distribution_id(i, n_filme_copy-1);
             int id_aleat = distribution_id(generator);
             filme filme_aleat = todos_filmes[id_aleat];
 
             if (verify_agenda(agenda, filme_aleat) && max_categorias[filme_aleat.categoria-1] - 1 >= 0){
-                // if (filme_aleat.h_fim < filme_aleat.h_inicio){
-                //     if (adicionou_madrugada==false){
-                //         max_categorias[filme_aleat.categoria-1] -= 1;
-                //         mochila.push_back(filme_aleat);
-                //         adicionou_madrugada=true;
-                //         todos_filmes.erase(todos_filmes.begin()+id_aleat-1);
-                //         n_filme = n_filme - 1;
-
-                //     }
-                // }
-                //else{
                 max_categorias[filme_aleat.categoria-1] -= 1;
                 agenda = fill_agenda(agenda, filme_aleat);
                 mochila.push_back(filme_aleat);
                 todos_filmes.erase(todos_filmes.begin()+id_aleat-1);
-                n_filme = n_filme - 1;
-                //}
-                
+                n_filme_copy = n_filme_copy - 1;
+            
             }
 
         }
@@ -232,11 +217,16 @@ int main() {
     }
     //ordenando para imprimir
     //sort(mochila.begin(), mochila.end(), [](auto& i, auto&j){return i.id < j.id;});
-    output_visual(mochila);
+
+    //output_visual(mochila);
+    generateOuput(mochila, n_filme, n_cat);
+
     cout << '\n';
     return 0;
 }
 // gerar arquivo de output com n_filmes, tempo de tela, tempo de execução, média da duração dos filmes, 
 
-// Por conta da variável horário, funciona mal com heurística que não ordene por horário (tipo duração)
-// Fazer de algum jeito que preencha um vetor de agenda e verifica se aquele horário ja foi utilizado
+// Formato
+// n_filmes_input    n_cat_input
+// tempo_de_tela     média_filmes
+
