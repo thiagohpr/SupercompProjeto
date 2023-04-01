@@ -176,11 +176,7 @@ int main() {
 
     //ordenar
     sort(todos_filmes.begin(), todos_filmes.end(), heuristica_por_final);
-    //sort(todos_filmes.begin(), todos_filmes.end(), heuristica_por_duracao);
 
-    //for(int i = 0; i < n_filme; i++){
-    //    cout << todos_filmes[i].h_inicio << " " << todos_filmes[i].h_fim << " " << todos_filmes[i].categoria << '\n';
-    //}
     unsigned seed = chrono::system_clock::now().time_since_epoch().count();
     default_random_engine generator(seed);
     uniform_int_distribution<int> distribution(1,4);
@@ -215,9 +211,7 @@ int main() {
         i++;
         
     }
-    //ordenando para imprimir
-    //sort(mochila.begin(), mochila.end(), [](auto& i, auto&j){return i.id < j.id;});
-
+    
     //output_visual(mochila);
     generateOuput(mochila, n_filme, n_cat);
 
