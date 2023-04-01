@@ -135,10 +135,6 @@ map<int, bool> fill_agenda(map<int, bool> agenda, filme this_filme){
     }
     map<int, bool>::iterator it;
 
-    for(it=agenda.begin(); it!=agenda.end(); ++it){
-    cout << it->first << " => " << it->second << '\n';
-    }
-    cout << "-----------------" << '\n';
     return agenda;
 }
 
@@ -161,7 +157,6 @@ int main() {
         max_categorias.push_back(this_max_cat);
     }
 
-    int this_id = 0;
     int this_h_inicio=0;
     int this_h_fim;
     int this_categoria=0;

@@ -19,22 +19,21 @@ lista_maximos = [0.11, 26, 31, 6]
 
 e = 0
 for pretty_name, z_column in targets.items():
-    # for i,df in enumerate([dataframe_guloso, dataframe_aleatorio]):
-        # fig = plt.figure()
-        # # syntax for 3-D projection
-        # ax = fig.add_subplot(111, projection ='3d')
+    for i,df in enumerate([dataframe_guloso, dataframe_aleatorio]):
+        fig = plt.figure()
+        # syntax for 3-D projection
+        ax = fig.add_subplot(111, projection ='3d')
         
-        # # defining axes
-        # ax.scatter(df.n_filmes.astype(int), df.n_categorias.astype(int), df[z_column].astype(float), color = colors[i])
+        # defining axes
+        ax.scatter(df.n_filmes.astype(int), df.n_categorias.astype(int), df[z_column].astype(float), color = colors[i])
         
-        # # syntax for plotting
-        # ax.set_title(f'3D {heuristicas[i]} para {pretty_name}')
-        # ax.set_xlabel('Número de Filmes')
-        # ax.set_ylabel('Número de Categorias')
-        # ax.set_zlabel(f'{pretty_name}')
-        # ax.axes.set_zlim3d(bottom=0, top=lista_maximos[e]) 
-        # plt.savefig(f'3d-{z_column}-{heuristicas[i].lower()}.png')
-        # plt.show()
+        # syntax for plotting
+        ax.set_title(f'3D {heuristicas[i]} para {pretty_name}')
+        ax.set_xlabel('Número de Filmes')
+        ax.set_ylabel('Número de Categorias')
+        ax.set_zlabel(f'{pretty_name}')
+        ax.axes.set_zlim3d(bottom=0, top=lista_maximos[e]) 
+        plt.savefig(f'3d-{z_column}-{heuristicas[i].lower()}.png')
 
     fig, axs = plt.subplots(2, 2)
     fig.suptitle(f'Vistas Laterais da Variável {pretty_name}\nGulosa           Gulosa Aleatória')

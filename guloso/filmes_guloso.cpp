@@ -162,7 +162,6 @@ int main() {
         max_categorias.push_back(this_max_cat);
     }
 
-    int this_id = 0;
     int this_h_inicio=0;
     int this_h_fim;
     int this_categoria=0;
