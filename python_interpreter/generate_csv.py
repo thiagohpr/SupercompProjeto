@@ -10,7 +10,7 @@ from natsort import os_sorted
 # roda os arquivos, cria um pandas dataframe com n_filme do input, n_categoria e o tempo de execucao
 
 def run_inputs(dataframe_geral, heuristica, ex):
-    input_path = '/home/user/SupercompProjeto/inputs'
+    input_path = '/content/inputs'
     input_files = os_sorted([f for f in listdir(input_path) if isfile(join(input_path, f))])
 
     for input_f in input_files:
@@ -29,11 +29,11 @@ def run_inputs(dataframe_geral, heuristica, ex):
                                 'n_filmes':[n_filmes],
                                 'n_categorias':[n_cat],
                                 'tempo_ex':[end-start],
-                                'n_assistidos':[None],
-                                'tempo_tela':[None],
-                                'media':[None]})
+                                'n_assistidos':[None]})
 
         dataframe_geral = pd.concat([dataframe_geral, this_line])
+        if end-start > 60:
+            break
 
     
     return dataframe_geral
@@ -42,9 +42,9 @@ def run_inputs(dataframe_geral, heuristica, ex):
 # le os outputs e adiciona as 3 variáveis às linhas correspondentes de filme_categoria
 
 def process_outputs(dataframe_geral):
-    output_path = '/home/user/SupercompProjeto/outputs'
+    output_path = '/content/outputs'
     output_files = os_sorted([f for f in listdir(output_path) if isfile(join(output_path, f))])
-
+    dataframe_geral = pd.DataFrame()
     for output_f in output_files:
         system('clear')
         print(f'> Processing Outputs')
@@ -56,22 +56,20 @@ def process_outputs(dataframe_geral):
         with open(f'{output_path}/{output_f}') as f:
             file_lines = f.readlines()
         
-        n_assistidos = int(file_lines[1].split(' ')[0])
-        tempo_tela = int(file_lines[1].split(' ')[1])
-        media = float(file_lines[1].split(' ')[2][:-1])
+        n_assistidos = int(file_lines[1])
 
         dataframe_geral.loc[(dataframe_geral.heur == heuristica)&(dataframe_geral.n_filmes == n_filmes)&(dataframe_geral.n_categorias == n_cat), 'n_assistidos'] = n_assistidos
-        dataframe_geral.loc[(dataframe_geral.heur == heuristica)&(dataframe_geral.n_filmes == n_filmes)&(dataframe_geral.n_categorias == n_cat), 'tempo_tela'] = tempo_tela
-        dataframe_geral.loc[(dataframe_geral.heur == heuristica)&(dataframe_geral.n_filmes == n_filmes)&(dataframe_geral.n_categorias == n_cat), 'media'] = media
-    
+
 # main chama as primerias funcoes e depois cria um gráfico 3d para cada variavel resposta n_filmes_assistidos, tempo_tela e média
 
 def main():
     dataframe_geral = pd.DataFrame()
 
-    heuristicas = {'aleat':'/home/user/SupercompProjeto/guloso_aleatorio/filmes_guloso_aleat',
-                   'gul':'/home/user/SupercompProjeto/guloso/filmes_guloso',
-                   }
+    heuristicas = {'aleat':'/content/filmes_guloso_aleat',
+                   'gul':'/content/filmes_guloso',
+                   'exau':'/content/filmes_bruta',
+                   'exau_parall':'/content/filmes_bruta_parall',
+                   'exau_gpu':'/content/filmes_bruta_gpu2'}
 
     for heuristica, ex in heuristicas.items():
         dataframe_geral = pd.concat([dataframe_geral, run_inputs(dataframe_geral, heuristica, ex)])
